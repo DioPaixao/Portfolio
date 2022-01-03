@@ -1,5 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import api from '../services/api'
+
+import Mensages from '../components/Mensages/Mensages'
 
 import '../styles/contact.scss'
 
@@ -7,6 +9,18 @@ export function Contact(){
 
 	const [ user_name, setUserName ] = useState('')
 	const [ user_mensage, setUserMensage ] = useState('')
+	const [ user_email, setUserEmail ] = useState('')
+	const [ allPost, setAllPost ] = useState([])
+
+	useEffect(() => {
+		async function getAllPost(){
+			const response = await api.get('/usuario')
+
+			setAllPost(response.data)
+		}
+
+		getAllPost()
+	}, [])
 
 	async function handleSubmit(e){
 		e.preventDefault()
@@ -14,10 +28,13 @@ export function Contact(){
 		const response = await api.post('/usuario',{
 			user_name,
 			user_mensage,
-			user_email: null
+			user_email
 		}) 
 		setUserName('')
+		setUserEmail('')
 		setUserMensage('')
+
+		setAllPost([...allPost, response.data])
 	}
  
 	return(
@@ -48,6 +65,9 @@ export function Contact(){
 								type="email" 
 								id="inputID" 
 								placeholder="Your email" 
+								required
+								value={user_email}
+								onChange={e => setUserEmail(e.target.value)}
 							/>
 							<textarea 
 								id="textareaID" 
@@ -64,12 +84,14 @@ export function Contact(){
 				</div>
 			</div>
 
-			<div className="mensages_container">
+			<div className='titulo_mensages'>
 				<h1>Mensages</h1>
-				<div className="mensages">
-					<h2>Nome da pessoa</h2>
-					<h3>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur quis neque non lacus laoreet viverra et vel arcu. Aenean cursus, eros at pharetra bibendum, arcu tortor consectetur sapien, eu iaculis sapien sem eget tortor.</h3>
-				</div>
+			</div>
+
+			<div>
+				{allPost.map(data => (
+					<Mensages data={data} />
+				))}	
 			</div>
 		</>
 	)
